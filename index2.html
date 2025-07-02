@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語発音練習アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .practice-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .sentence-display {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 1.3em;
+            text-align: center;
+            color: #333;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-area {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 100px;
+        }
+        
+        .result-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .listening-indicator {
+            display: none;
+            text-align: center;
+            color: #dc3545;
+            font-weight: bold;
+            margin: 10px 0;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .score {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .sentence-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .sentence-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .sentence-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .sentence-item.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 英語発音練習</h1>
+            <p>音声認識で発音をチェックしましょう</p>
+        </div>
+        
+        <div class="practice-area">
+            <div class="sentence-display" id="sentenceDisplay">
+                練習する文章を選んでください
+            </div>
+            
+            <div class="listening-indicator" id="listeningIndicator">
+                🎤 音声を認識中...
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="speakBtn">🔊 音声再生</button>
+                <button class="btn btn-success" id="recordBtn">🎤 録音開始</button>
+                <button class="btn btn-secondary" id="nextBtn">➡️ 次の文章</button>
+                <button class="btn btn-secondary" id="testMicBtn">🎤 マイクテスト</button>
+            </div>
+            
+            <div class="result-area result-info" id="resultArea">
+                <strong>使い方：</strong><br>
+                1. 下から練習したい文章を選択<br>
+                2. 「音声再生」でお手本を聞く<br>
+                3. 「録音開始」を押して発音練習<br>
+                4. 結果を確認して繰り返し練習
+            </div>
+            
+            <div class="score" id="scoreArea"></div>
+        </div>
+        
+        <div class="sentence-list">
+            <h3>練習文章</h3>
+            <div class="sentence-item" data-sentence="Hello, how are you today?">Hello, how are you today?</div>
+            <div class="sentence-item" data-sentence="I like to study English every day.">I like to study English every day.</div>
+            <div class="sentence-item" data-sentence="The weather is very nice today.">The weather is very nice today.</div>
+            <div class="sentence-item" data-sentence="Can you help me with my homework?">Can you help me with my homework?</div>
+            <div class="sentence-item" data-sentence="I want to improve my English pronunciation.">I want to improve my English pronunciation.</div>
+            <div class="sentence-item" data-sentence="Thank you for your help and support.">Thank you for your help and support.</div>
+            <div class="sentence-item" data-sentence="Practice makes perfect in learning languages.">Practice makes perfect in learning languages.</div>
+            <div class="sentence-item" data-sentence="I enjoy reading books in English.">I enjoy reading books in English.</div>
+        </div>
+    </div>
+
+    <script>
+        class PronunciationApp {
+            constructor() {
+                this.currentSentence = '';
+                this.recognition = null;
+                this.synthesis = window.speechSynthesis;
+                this.score = 0;
+                this.attempts = 0;
+                
+                this.initElements();
+                this.initSpeechRecognition();
+                this.bindEvents();
+            }
+            
+            initElements() {
+                this.sentenceDisplay = document.getElementById('sentenceDisplay');
+                this.speakBtn = document.getElementById('speakBtn');
+                this.recordBtn = document.getElementById('recordBtn');
+                this.nextBtn = document.getElementById('nextBtn');
+                this.testMicBtn = document.getElementById('testMicBtn');
+                this.resultArea = document.getElementById('resultArea');
+                this.scoreArea = document.getElementById('scoreArea');
+                this.listeningIndicator = document.getElementById('listeningIndicator');
+                this.sentenceItems = document.querySelectorAll('.sentence-item');
+            }
+            
+            initSpeechRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    this.recognition.continuous = false;
+                    this.recognition.interimResults = false;
+                    this.recognition.lang = 'en-US';
+                    
+                    this.recognition.onstart = () => {
+                        this.listeningIndicator.style.display = 'block';
+                        this.recordBtn.textContent = '🛑 録音中...';
+                        this.recordBtn.disabled = true;
+                    };
+                    
+                    this.recognition.onresult = (event) => {
+                        const result = event.results[0][0].transcript;
+                        this.processResult(result);
+                    };
+                    
+                    this.recognition.onerror = (event) => {
+                        let errorMessage = 'エラーが発生しました: ';
+                        switch(event.error) {
+                            case 'not-allowed':
+                                errorMessage = '🎤 マイクの使用許可が必要です。<br><br>' +
+                                             '<strong>解決方法：</strong><br>' +
+                                             '1. アドレスバーの🔒マークをクリック<br>' +
+                                             '2. マイクを「許可」に設定<br>' +
+                                             '3. ページを再読み込みしてください';
+                                break;
+                            case 'no-speech':
+                                errorMessage = '音声が検出されませんでした。もう一度お試しください。';
+                                break;
+                            case 'audio-capture':
+                                errorMessage = 'マイクにアクセスできません。他のアプリがマイクを使用していないか確認してください。';
+                                break;
+                            case 'network':
+                                errorMessage = 'ネットワークエラーです。インターネット接続を確認してください。';
+                                break;
+                            default:
+                                errorMessage += event.error;
+                        }
+                        this.showResult(errorMessage, 'error');
+                        this.resetRecordButton();
+                    };
+                    
+                    this.recognition.onend = () => {
+                        this.resetRecordButton();
+                    };
+                } else {
+                    this.showResult('お使いのブラウザは音声認識に対応していません。<br>Chrome、Edge、Safari（最新版）をお使いください。', 'error');
+                }
+            }
+            
+            bindEvents() {
+                this.speakBtn.addEventListener('click', () => this.speakSentence());
+                this.recordBtn.addEventListener('click', () => this.startRecording());
+                this.nextBtn.addEventListener('click', () => this.nextSentence());
+                this.testMicBtn.addEventListener('click', () => this.testMicrophone());
+                
+                this.sentenceItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.selectSentence(item.dataset.sentence);
+                        this.updateActiveItem(item);
+                    });
+                });
+            }
+            
+            selectSentence(sentence) {
+                this.currentSentence = sentence;
+                this.sentenceDisplay.textContent = sentence;
+                this.resultArea.className = 'result-area result-info';
+                this.resultArea.innerHTML = '<strong>選択された文章:</strong><br>' + sentence + '<br><br>「音声再生」でお手本を聞いてから、「録音開始」で練習してください。';
+            }
+            
+            updateActiveItem(activeItem) {
+                this.sentenceItems.forEach(item => item.classList.remove('active'));
+                activeItem.classList.add('active');
+            }
+            
+            speakSentence() {
+                if (!this.currentSentence) {
+                    this.showResult('まず練習する文章を選択してください。', 'error');
+                    return;
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(this.currentSentence);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                
+                this.synthesis.speak(utterance);
+            }
+            
+            startRecording() {
+                if (!this.currentSentence) {
+                    this.showResult('まず練習する文章を選択してください。', 'error');
+                    return;
+                }
+                
+                if (!this.recognition) {
+                    this.showResult('音声認識が利用できません。', 'error');
+                    return;
+                }
+                
+                this.recognition.start();
+            }
+            
+            processResult(spokenText) {
+                this.attempts++;
+                const similarity = this.calculateSimilarity(this.currentSentence.toLowerCase(), spokenText.toLowerCase());
+                
+                let resultClass, resultText;
+                if (similarity > 0.8) {
+                    resultClass = 'success';
+                    resultText = '🎉 素晴らしい発音です！';
+                    this.score += 10;
+                } else if (similarity > 0.6) {
+                    resultClass = 'info';
+                    resultText = '👍 良い発音です。もう少し練習してみましょう。';
+                    this.score += 5;
+                } else {
+                    resultClass = 'error';
+                    resultText = '💪 発音を練習しましょう。もう一度挑戦してください。';
+                }
+                
+                const detailedResult = `
+                    <strong>${resultText}</strong><br><br>
+                    <strong>目標文章:</strong> ${this.currentSentence}<br>
+                    <strong>認識結果:</strong> ${spokenText}<br>
+                    <strong>類似度:</strong> ${Math.round(similarity * 100)}%
+                `;
+                
+                this.showResult(detailedResult, resultClass);
+                this.updateScore();
+            }
+            
+            calculateSimilarity(str1, str2) {
+                const words1 = str1.replace(/[^\w\s]/g, '').split(/\s+/);
+                const words2 = str2.replace(/[^\w\s]/g, '').split(/\s+/);
+                
+                const maxLength = Math.max(words1.length, words2.length);
+                if (maxLength === 0) return 1;
+                
+                let matches = 0;
+                for (let i = 0; i < Math.min(words1.length, words2.length); i++) {
+                    if (words1[i] === words2[i]) {
+                        matches++;
+                    }
+                }
+                
+                return matches / maxLength;
+            }
+            
+            showResult(message, type) {
+                this.resultArea.className = `result-area result-${type}`;
+                this.resultArea.innerHTML = message;
+            }
+            
+            resetRecordButton() {
+                this.listeningIndicator.style.display = 'none';
+                this.recordBtn.textContent = '🎤 録音開始';
+                this.recordBtn.disabled = false;
+            }
+            
+            updateScore() {
+                this.scoreArea.innerHTML = `スコア: ${this.score}点 (${this.attempts}回挑戦)`;
+            }
+            
+            nextSentence() {
+                const activeItem = document.querySelector('.sentence-item.active');
+                if (activeItem) {
+                    const nextItem = activeItem.nextElementSibling;
+                    if (nextItem && nextItem.classList.contains('sentence-item')) {
+                        nextItem.click();
+                    } else {
+                        // 最初の文章に戻る
+                        this.sentenceItems[0].click();
+                    }
+                } else {
+                    // アクティブな項目がない場合は最初の文章を選択
+                    this.sentenceItems[0].click();
+                }
+            }
+            
+            async testMicrophone() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.showResult('✅ マイクのテストに成功しました！音声認識が使用できます。', 'success');
+                    // ストリームを停止
+                    stream.getTracks().forEach(track => track.stop());
+                } catch (error) {
+                    let errorMessage = '❌ マイクのテストに失敗しました。<br><br>';
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage += '<strong>マイクの許可が必要です：</strong><br>' +
+                                      '1. ブラウザのアドレスバー左側の🔒をクリック<br>' +
+                                      '2. マイクを「許可」に設定<br>' +
+                                      '3. ページを再読み込みしてください';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage += 'マイクが見つかりません。マイクが接続されているか確認してください。';
+                    } else {
+                        errorMessage += 'エラー: ' + error.message;
+                    }
+                    this.showResult(errorMessage, 'error');
+                }
+            }
+        }
+        
+        // アプリケーション開始
+        document.addEventListener('DOMContentLoaded', () => {
+            new PronunciationApp();
+        });
+    </script>
+</body>
+</html>
