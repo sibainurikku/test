@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>英語発音練習アプリ</title>
+    <title>英語発音練習アプリ - カスタムモード</title>
     <style>
+        /* スタイルは変更なし（前回のHTMLからコピーペーストしてください） */
         * {
             margin: 0;
             padding: 0;
@@ -112,6 +113,16 @@
             background: #545b62;
             transform: translateY(-2px);
         }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
         
         .btn:disabled {
             opacity: 0.6;
@@ -166,13 +177,12 @@
             margin: 20px 0;
         }
         
-        .sentence-list {
+        .sentence-list { 
             background: white;
             border-radius: 10px;
             padding: 20px;
             margin: 20px 0;
         }
-        
         .sentence-item {
             padding: 10px;
             margin: 5px 0;
@@ -189,7 +199,55 @@
             background: #007bff;
             color: white;
         }
+        .custom-sentence-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid #eee; 
+        }
+
+        .custom-sentence-item:hover {
+            background: #f0f0f0; 
+        }
+
+        .custom-sentence-item.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff; 
+        }
         
+        .custom-sentence-item .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%; 
+            width: 24px;
+            height: 24px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0; 
+            margin-left: 10px; 
+        }
+
+        .custom-sentence-item.active .delete-btn {
+            background: #f8d7da; 
+            color: #721c24;
+        }
+
+        .custom-sentence-item .delete-btn:hover {
+            background: #c82333;
+        }
+
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -210,12 +268,18 @@
     <div class="container">
         <div class="header">
             <h1>🎤 英語発音練習</h1>
-            <p>音声認識で発音をチェックしましょう</p>
+            <p>自分で文章を入力して発音をチェックしましょう</p>
         </div>
         
         <div class="practice-area">
+            <div style="padding-bottom: 20px;">
+                <h3>新しいカスタム文章の入力</h3>
+                <textarea id="customSentenceInput" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 1em; margin-bottom: 10px;" placeholder="ここに練習したい文章を入力してください。例: This is a custom sentence."></textarea>
+                <button class="btn btn-primary" id="addCustomSentenceBtn" style="width: 100%;">カスタム文章として追加</button>
+            </div>
+            
             <div class="sentence-display" id="sentenceDisplay">
-                練習する文章を選んでください
+                ↑上に文章を入力して「カスタム文章として追加」を押してください
             </div>
             
             <div class="listening-indicator" id="listeningIndicator">
@@ -225,23 +289,36 @@
             <div class="controls">
                 <button class="btn btn-primary" id="speakBtn">🔊 音声再生</button>
                 <button class="btn btn-success" id="recordBtn">🎤 録音開始</button>
-                <button class="btn btn-secondary" id="nextBtn">➡️ 次の文章</button>
+                <button class="btn btn-danger" id="cancelRecordBtn" style="display: none;">❌ 録音キャンセル</button> 
+                <button class="btn btn-secondary" id="prevBtn">⬅️ 前のフレーズ</button> 
+                <button class="btn btn-secondary" id="nextBtn">➡️ 次のフレーズ</button> 
                 <button class="btn btn-secondary" id="testMicBtn">🎤 マイクテスト</button>
             </div>
             
             <div class="result-area result-info" id="resultArea">
                 <strong>使い方：</strong><br>
-                1. 下から練習したい文章を選択<br>
-                2. 「音声再生」でお手本を聞く<br>
-                3. 「録音開始」を押して発音練習<br>
-                4. 結果を確認して繰り返し練習
+                1. 上の入力欄に練習したい英語の文章を入力<br>
+                2. 「カスタム文章として追加」ボタンを押す<br>
+                3. 「音声再生」でお手本を聞く<br>
+                4. 「録音開始」を押して発音練習<br>
+                5. 結果を確認して繰り返し練習<br><br>
+                追加されたカスタム文章は「マイ文章リスト」に保存されます。<br>
+                または、下の「練習文章」リストから文章を選択することもできます。<br>
+                「⬅️ 前のフレーズ」/「➡️ 次のフレーズ」ボタンで、カスタム文章とプリセット文章を順に切り替えられます。
             </div>
             
             <div class="score" id="scoreArea"></div>
         </div>
         
+        <div class="sentence-list" id="mySentenceList">
+            <h3>マイ文章リスト</h3>
+            <div style="font-size: 0.9em; color: #666; padding: 10px;">
+                追加されたカスタム文章がここに表示されます。
+            </div>
+        </div>
+
         <div class="sentence-list">
-            <h3>練習文章</h3>
+            <h3>練習文章 (プリセット)</h3>
             <div class="sentence-item" data-sentence="Hello, how are you today?">Hello, how are you today?</div>
             <div class="sentence-item" data-sentence="I like to study English every day.">I like to study English every day.</div>
             <div class="sentence-item" data-sentence="The weather is very nice today.">The weather is very nice today.</div>
@@ -259,26 +336,49 @@
                 this.currentSentence = '';
                 this.recognition = null;
                 this.synthesis = window.speechSynthesis;
-                this.englishVoice = null; 
+                this.englishVoice = null;
                 this.score = 0;
                 this.attempts = 0;
-                
+                this.customSentences = []; 
+                this.localStorageKey = 'pronunciation_app_custom_sentences';
+
                 this.initElements();
                 this.initSpeechRecognition();
-                this.loadVoices(); 
+                this.loadVoices();
+                this.loadCustomSentences();
+                this.renderCustomSentences();
                 this.bindEvents();
+
+                this.sentenceDisplay.textContent = '↑上に文章を入力して「カスタム文章として追加」を押してください';
+                this.resultArea.innerHTML = `
+                    <strong>使い方：</strong><br>
+                    1. 上の入力欄に練習したい英語の文章を入力<br>
+                    2. 「カスタム文章として追加」ボタンを押す<br>
+                    3. 「音声再生」でお手本を聞く<br>
+                    4. 「録音開始」を押して発音練習<br>
+                    5. 結果を確認して繰り返し練習<br><br>
+                    追加されたカスタム文章は「マイ文章リスト」に保存されます。<br>
+                    または、下の「練習文章」リストから文章を選択することもできます。<br>
+                    「⬅️ 前のフレーズ」/「➡️ 次のフレーズ」ボタンで、カスタム文章とプリセット文章を順に切り替えられます。
+                `;
             }
             
             initElements() {
                 this.sentenceDisplay = document.getElementById('sentenceDisplay');
                 this.speakBtn = document.getElementById('speakBtn');
                 this.recordBtn = document.getElementById('recordBtn');
+                this.cancelRecordBtn = document.getElementById('cancelRecordBtn'); 
                 this.nextBtn = document.getElementById('nextBtn');
-                this.testMicBtn = document.getElementById('testMicBtn');
+                this.prevBtn = document.getElementById('prevBtn'); 
+                this.testMicBtn = document.getElementById('testMicBtn'); // 移動したので念のため確認
                 this.resultArea = document.getElementById('resultArea');
                 this.scoreArea = document.getElementById('scoreArea');
                 this.listeningIndicator = document.getElementById('listeningIndicator');
-                this.sentenceItems = document.querySelectorAll('.sentence-item');
+                // document.querySelectorAllで動的に取得されるため、コンストラクタでは参照しない
+                // this.sentenceItems = document.querySelectorAll('.sentence-item'); // renderCustomSentences()後に更新される
+                this.customSentenceInput = document.getElementById('customSentenceInput');
+                this.addCustomSentenceBtn = document.getElementById('addCustomSentenceBtn');
+                this.mySentenceList = document.getElementById('mySentenceList');
             }
             
             initSpeechRecognition() {
@@ -291,8 +391,13 @@
                     
                     this.recognition.onstart = () => {
                         this.listeningIndicator.style.display = 'block';
-                        this.recordBtn.textContent = '🛑 録音中...';
-                        this.recordBtn.disabled = true;
+                        this.recordBtn.style.display = 'none'; 
+                        this.cancelRecordBtn.style.display = 'inline-block'; 
+                        this.speakBtn.disabled = true;
+                        this.nextBtn.disabled = true;
+                        this.prevBtn.disabled = true; 
+                        this.testMicBtn.disabled = true; // 無効化
+                        this.addCustomSentenceBtn.disabled = true;
                     };
                     
                     this.recognition.onresult = (event) => {
@@ -319,15 +424,20 @@
                             case 'network':
                                 errorMessage = 'ネットワークエラーです。インターネット接続を確認してください。';
                                 break;
+                            case 'aborted': 
+                                console.log('録音はキャンセルされました。');
+                                break;
                             default:
                                 errorMessage += event.error;
                         }
-                        this.showResult(errorMessage, 'error');
-                        this.resetRecordButton();
+                        if (event.error !== 'aborted') { 
+                            this.showResult(errorMessage, 'error');
+                        }
+                        this.resetRecordButton(); 
                     };
                     
                     this.recognition.onend = () => {
-                        this.resetRecordButton();
+                        this.resetRecordButton(); 
                     };
                 } else {
                     this.showResult('お使いのブラウザは音声認識に対応していません。<br>Chrome、Edge、Safari（最新版）をお使いください。', 'error');
@@ -335,17 +445,12 @@
             }
 
             loadVoices() {
-                // `voiceschanged` イベントは、音声が利用可能になったときに発火します。
-                // 特にSafari (iOS) では、このイベントがユーザー操作の後にしか発火しない場合があります。
-                // したがって、両方のケースに対応するために、イベントリスナーを設定しつつ、
-                // 必要に応じて手動でgetVoicesを呼び出すロジックを維持します。
                 const setVoice = () => {
                     const voices = this.synthesis.getVoices();
-                    // 特定の英語音声（US英語）を優先的に選択
                     this.englishVoice = voices.find(voice => voice.lang === 'en-US' && voice.name.includes('Samantha')) ||
                                          voices.find(voice => voice.lang === 'en-US' && voice.name.includes('Alex')) ||
                                          voices.find(voice => voice.lang === 'en-US' && voice.name.includes('Google US English')) ||
-                                         voices.find(voice => voice.lang === 'en-US'); 
+                                         voices.find(voice => voice.lang === 'en-US');
                     
                     if (!this.englishVoice) {
                         console.warn('en-US の音声が見つかりませんでした。デフォルト音声が使用される可能性があります。');
@@ -354,52 +459,57 @@
                     }
                 };
 
-                // voiceschanged イベントリスナーを設定
                 this.synthesis.onvoiceschanged = setVoice;
 
-                // 既に音声がロードされている可能性がある場合の対応（特にPCブラウザ向け）
                 if (this.synthesis.getVoices().length > 0) {
                     setVoice();
                 } else {
-                    // iOS/Safariでvoiceschangedがすぐに発火しない場合のフォールバック
-                    // 短い遅延を設けて再度getVoicesを試行
-                    setTimeout(setVoice, 500); 
+                    setTimeout(setVoice, 500);
                 }
             }
             
             bindEvents() {
                 this.speakBtn.addEventListener('click', () => this.speakSentence());
                 this.recordBtn.addEventListener('click', () => this.startRecording());
-                this.nextBtn.addEventListener('click', () => this.nextSentence());
-                this.testMicBtn.addEventListener('click', () => this.testMicrophone());
-                
-                this.sentenceItems.forEach(item => {
+                this.cancelRecordBtn.addEventListener('click', () => this.cancelRecording());
+                this.nextBtn.addEventListener('click', () => this.nextSentence()); 
+                this.prevBtn.addEventListener('click', () => this.previousSentence()); 
+                this.testMicBtn.addEventListener('click', () => this.testMicrophone()); // testMicBtnのイベントリスナーはそのまま
+
+                // プリセット文章のイベントリスナーは初期化時に設定
+                // renderCustomSentences() でカスタム文章にもイベントリスナーを設定するため、ここでのループは不要
+                document.querySelectorAll('.sentence-list:not(#mySentenceList) .sentence-item').forEach(item => {
                     item.addEventListener('click', () => {
                         this.selectSentence(item.dataset.sentence);
                         this.updateActiveItem(item);
                     });
                 });
+
+                this.addCustomSentenceBtn.addEventListener('click', () => this.addCustomSentence());
             }
             
             selectSentence(sentence) {
                 this.currentSentence = sentence;
                 this.sentenceDisplay.textContent = sentence;
                 this.resultArea.className = 'result-area result-info';
-                this.resultArea.innerHTML = '<strong>選択された文章:</strong><br>' + sentence + '<br><br>「音声再生」でお手本を聞いてから、「録音開始」で練習してください。';
+                this.resultArea.innerHTML = '<strong>現在の練習文章:</strong><br>' + sentence + '<br><br>「音声再生」でお手本を聞いてから、「録音開始」で練習してください。';
             }
             
-            updateActiveItem(activeItem) {
-                this.sentenceItems.forEach(item => item.classList.remove('active'));
-                activeItem.classList.add('active');
+            updateActiveItem(activeElement) {
+                document.querySelectorAll('.sentence-item, .custom-sentence-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                if (activeElement) {
+                    activeElement.classList.add('active');
+                }
             }
             
             speakSentence() {
                 if (!this.currentSentence) {
-                    this.showResult('まず練習する文章を選択してください。', 'error');
+                    this.showResult('練習する文章を選択するか、カスタム文章を入力してください。', 'error');
                     return;
                 }
                 
-                // 再生中の場合は停止
                 if (this.synthesis.speaking) {
                     this.synthesis.cancel();
                 }
@@ -419,7 +529,7 @@
             
             startRecording() {
                 if (!this.currentSentence) {
-                    this.showResult('まず練習する文章を選択してください。', 'error');
+                    this.showResult('練習する文章を選択するか、カスタム文章を入力してください。', 'error');
                     return;
                 }
                 
@@ -429,6 +539,19 @@
                 }
                 
                 this.recognition.start();
+                this.speakBtn.disabled = true;
+                this.nextBtn.disabled = true;
+                this.prevBtn.disabled = true; 
+                this.testMicBtn.disabled = true; // 無効化
+                this.addCustomSentenceBtn.disabled = true;
+            }
+
+            cancelRecording() {
+                if (this.recognition) {
+                    this.recognition.stop(); 
+                    this.showResult('録音はキャンセルされました。', 'info');
+                    this.resetRecordButton(); 
+                }
             }
             
             processResult(spokenText) {
@@ -487,26 +610,90 @@
             
             resetRecordButton() {
                 this.listeningIndicator.style.display = 'none';
-                this.recordBtn.textContent = '🎤 録音開始';
-                this.recordBtn.disabled = false;
+                this.recordBtn.style.display = 'inline-block'; 
+                this.recordBtn.textContent = '🎤 録音開始'; 
+                this.recordBtn.disabled = false; 
+                this.cancelRecordBtn.style.display = 'none'; 
+                this.speakBtn.disabled = false;
+                this.nextBtn.disabled = false;
+                this.prevBtn.disabled = false; 
+                this.testMicBtn.disabled = false; // 有効化
+                this.addCustomSentenceBtn.disabled = false;
             }
             
             updateScore() {
                 this.scoreArea.innerHTML = `スコア: ${this.score}点 (${this.attempts}回挑戦)`;
             }
             
+            // 全ての文章アイテムを取得するヘルパーメソッド
+            getAllSentenceItems() {
+                const presetItems = Array.from(document.querySelectorAll('.sentence-list:not(#mySentenceList) .sentence-item'));
+                const customItems = Array.from(this.mySentenceList.querySelectorAll('.custom-sentence-item'));
+                // カスタムを先にすることで、カスタムメインの挙動を優先
+                return customItems.concat(presetItems); 
+            }
+
             nextSentence() {
-                const activeItem = document.querySelector('.sentence-item.active');
-                if (activeItem) {
-                    const nextItem = activeItem.nextElementSibling;
-                    if (nextItem && nextItem.classList.contains('sentence-item')) {
-                        nextItem.click();
-                    } else {
-                        this.sentenceItems[0].click();
-                    }
-                } else {
-                    this.sentenceItems[0].click();
+                const allItems = this.getAllSentenceItems();
+                if (allItems.length === 0) {
+                    this.showResult('練習できる文章がありません。カスタム文章を追加してください。', 'info');
+                    return;
                 }
+
+                const currentSentenceText = this.currentSentence;
+                let currentIndex = -1;
+
+                // 現在の文章がどのアイテムに該当するかを探す
+                for (let i = 0; i < allItems.length; i++) {
+                    if (allItems[i].dataset.sentence === currentSentenceText) {
+                        currentIndex = i;
+                        break;
+                    }
+                }
+
+                let nextIndex = (currentIndex + 1) % allItems.length; // 次のインデックス (ループ)
+
+                // もし currentSentenceText が見つからなかった場合、または初期状態の場合
+                // 最初の文章（カスタムリストの先頭、なければプリセットの先頭）を選択
+                if (currentIndex === -1) { 
+                    nextIndex = 0; 
+                }
+
+                const nextItem = allItems[nextIndex];
+                this.selectSentence(nextItem.dataset.sentence);
+                this.updateActiveItem(nextItem);
+            }
+
+            previousSentence() {
+                const allItems = this.getAllSentenceItems();
+                if (allItems.length === 0) {
+                    this.showResult('練習できる文章がありません。カスタム文章を追加してください。', 'info');
+                    return;
+                }
+
+                const currentSentenceText = this.currentSentence;
+                let currentIndex = -1;
+
+                // 現在の文章がどのアイテムに該当するかを探す
+                for (let i = 0; i < allItems.length; i++) {
+                    if (allItems[i].dataset.sentence === currentSentenceText) {
+                        currentIndex = i;
+                        break;
+                    }
+                }
+
+                let prevIndex;
+                if (currentIndex === -1) {
+                    // もし currentSentenceText が見つからなかった場合、または初期状態の場合
+                    // 最後の文章（プリセットの最後、なければカスタムの最後）を選択
+                    prevIndex = allItems.length - 1; 
+                } else {
+                    prevIndex = (currentIndex - 1 + allItems.length) % allItems.length; // 前のインデックス (ループ)
+                }
+                
+                const prevItem = allItems[prevIndex];
+                this.selectSentence(prevItem.dataset.sentence);
+                this.updateActiveItem(prevItem);
             }
             
             async testMicrophone() {
@@ -516,19 +703,153 @@
                     stream.getTracks().forEach(track => track.stop());
                 } catch (error) {
                     let errorMessage = '❌ マイクのテストに失敗しました。<br><br>';
-                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') { // Safari (iOS) でのPermissionDeniedErrorにも対応
+                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
                         errorMessage += '<strong>マイクの許可が必要です：</strong><br>' +
-                                        '1. ブラウザのアドレスバー左側の🔒をクリック<br>' +
-                                        '2. マイクを「許可」に設定<br>' +
-                                        '3. ページを再読み込みしてください';
+                                         '1. ブラウザのアドレスバー左側の🔒をクリック<br>' +
+                                         '2. マイクを「許可」に設定<br>' +
+                                         '3. ページを再読み込みしてください';
                     } else if (error.name === 'NotFoundError') {
                         errorMessage += 'マイクが見つかりません。マイクが接続されているか確認してください。';
-                    } else if (error.name === 'NotReadableError' || error.name === 'AbortError') { // マイクが利用中などのエラー
+                    } else if (error.name === 'NotReadableError' || error.name === 'AbortError') {
                         errorMessage += 'マイクにアクセスできません。他のアプリがマイクを使用していないか確認してください。';
                     } else {
                         errorMessage += 'エラー: ' + error.message;
                     }
                     this.showResult(errorMessage, 'error');
+                }
+            }
+
+            addCustomSentence() {
+                const newSentence = this.customSentenceInput.value.trim();
+                if (newSentence && !this.customSentences.includes(newSentence)) {
+                    this.customSentences.push(newSentence);
+                    this.saveCustomSentences();
+                    this.renderCustomSentences();
+                    // renderCustomSentencesで要素が再生成されるため、再取得する
+                    const addedItem = this.mySentenceList.querySelector(`[data-sentence="${newSentence}"]`);
+                    if (addedItem) {
+                        this.selectSentence(newSentence);
+                        this.updateActiveItem(addedItem);
+                    }
+
+                    this.customSentenceInput.value = '';
+
+                    this.score = 0;
+                    this.attempts = 0;
+                    this.updateScore();
+                    
+                    this.resultArea.className = 'result-area result-info';
+                    this.resultArea.innerHTML = `<strong>カスタム文章を追加しました:</strong><br>${newSentence}<br><br>「音声再生」でお手本を聞いてから、「録音開始」で練習してください。`;
+                } else if (this.customSentences.includes(newSentence)) {
+                    this.showResult('その文章はすでにリストに存在します。', 'info');
+                    const existingItem = this.mySentenceList.querySelector(`[data-sentence="${newSentence}"]`);
+                    if (existingItem) {
+                        this.updateActiveItem(existingItem);
+                        this.selectSentence(newSentence);
+                    }
+                } else {
+                    this.showResult('入力欄に文章を入力してください。', 'error');
+                }
+            }
+
+            loadCustomSentences() {
+                const storedSentences = localStorage.getItem(this.localStorageKey);
+                if (storedSentences) {
+                    try {
+                        this.customSentences = JSON.parse(storedSentences);
+                    } catch (e) {
+                        console.error("Failed to parse custom sentences from localStorage:", e);
+                        this.customSentences = [];
+                    }
+                }
+            }
+
+            saveCustomSentences() {
+                localStorage.setItem(this.localStorageKey, JSON.stringify(this.customSentences));
+            }
+
+            renderCustomSentences() {
+                const existingHeader = this.mySentenceList.querySelector('h3');
+                this.mySentenceList.innerHTML = ''; 
+                if (existingHeader) {
+                    this.mySentenceList.appendChild(existingHeader); 
+                } else {
+                    const newHeader = document.createElement('h3');
+                    newHeader.textContent = 'マイ文章リスト';
+                    this.mySentenceList.appendChild(newHeader);
+                }
+
+
+                if (this.customSentences.length === 0) {
+                    const infoDiv = document.createElement('div');
+                    infoDiv.style.fontSize = '0.9em';
+                    infoDiv.style.color = '#666';
+                    infoDiv.style.padding = '10px';
+                    infoDiv.textContent = '追加されたカスタム文章がここに表示されます。';
+                    this.mySentenceList.appendChild(infoDiv);
+                } else {
+                    this.customSentences.forEach((sentence, index) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'custom-sentence-item';
+                        itemDiv.dataset.sentence = sentence;
+                        itemDiv.innerHTML = `
+                            <span>${sentence}</span>
+                            <button class="delete-btn" data-index="${index}">×</button>
+                        `;
+                        
+                        itemDiv.querySelector('span').addEventListener('click', () => {
+                            this.selectSentence(sentence);
+                            this.updateActiveItem(itemDiv);
+                        });
+
+                        itemDiv.querySelector('.delete-btn').addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            this.deleteCustomSentence(index);
+                        });
+
+                        this.mySentenceList.appendChild(itemDiv);
+                    });
+                }
+                if (this.currentSentence) {
+                    const currentActiveItem = document.querySelector(`[data-sentence="${this.currentSentence}"]`);
+                    if (currentActiveItem) {
+                        this.updateActiveItem(currentActiveItem);
+                    } else {
+                        this.updateActiveItem(null); 
+                    }
+                } else {
+                     this.updateActiveItem(null);
+                }
+            }
+
+            deleteCustomSentence(index) {
+                const deletedSentence = this.customSentences[index];
+                if (confirm(`「${deletedSentence}」を削除してもよろしいですか？`)) {
+                    const wasCurrent = (deletedSentence === this.currentSentence);
+
+                    this.customSentences.splice(index, 1);
+                    this.saveCustomSentences();
+                    this.renderCustomSentences();
+
+                    if (wasCurrent) {
+                        const allItems = this.getAllSentenceItems();
+                        if (allItems.length > 0) {
+                            // 削除後、次の文章を選択 (ループで最初の文章へ)
+                            const newActiveIndex = index % allItems.length; // 削除された位置の次の要素
+                            const newActiveItem = allItems[newActiveIndex];
+                            this.selectSentence(newActiveItem.dataset.sentence);
+                            this.updateActiveItem(newActiveItem);
+                        } else {
+                            this.currentSentence = '';
+                            this.sentenceDisplay.textContent = '↑上に文章を入力して「カスタム文章として追加」を押してください';
+                            this.updateActiveItem(null); 
+                            this.updateScore(); 
+                        }
+                    } else {
+                        const currentActiveItem = document.querySelector(`[data-sentence="${this.currentSentence}"]`);
+                        this.updateActiveItem(currentActiveItem);
+                    }
+                    this.showResult(`「${deletedSentence}」を削除しました。`, 'info');
                 }
             }
         }
