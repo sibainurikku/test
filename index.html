@@ -3,868 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小学4年生のための分度器ゲーム</title>
+    <title>英語発音練習アプリ</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            padding: 20px;
         }
-
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #2d3436;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .control-group label {
-            font-size: 16px;
-            color: #2d3436;
-            font-weight: 600;
-        }
-
-        input[type="range"] {
-            width: 100px;
-            height: 8px;
-            border-radius: 4px;
-            background: #ddd;
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #00b894;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0, 184, 148, 0.3);
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-primary {
-            background: #00b894;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #00a085;
-            transform: translateY(-2px);
-        }
-
-        .btn-reset {
-            background: #e17055;
-            color: white;
-        }
-
-        .btn-reset:hover {
-            background: #d63031;
-            transform: translateY(-2px);
-        }
-
-        .canvas-container {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #canvas {
-            display: block;
-            cursor: crosshair;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .angle-display {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            font-size: 32px;
-            font-weight: bold;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
             text-align: center;
-            border: 3px solid #00b894;
+            margin-bottom: 30px;
         }
-
-        .instruction-panel {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .practice-area {
+            background: #f8f9fa;
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            max-width: 350px;
-            font-size: 16px;
-            color: #2d3436;
-            line-height: 1.6;
-            border: 3px solid #fdcb6e;
+            padding: 25px;
+            margin: 20px 0;
         }
-
-        .instruction-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #e17055;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .step {
-            margin-bottom: 12px;
-            padding: 8px;
-            background: rgba(116, 185, 255, 0.1);
-            border-radius: 8px;
-            border-left: 4px solid #74b9ff;
-        }
-
-        .angle-info {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            font-size: 18px;
-            color: #2d3436;
-            font-weight: 600;
-            border: 3px solid #a29bfe;
-            min-width: 200px;
-            text-align: center;
-        }
-
-        .help-message {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            background: rgba(0, 184, 148, 0.9);
-            color: white;
-            padding: 15px 20px;
+        
+        .sentence-display {
+            background: white;
+            border: 2px solid #e9ecef;
             border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            max-width: 300px;
-        }
-
-        .help-message.show {
-            opacity: 1;
-        }
-
-        /* Game specific styles */
-        .game-controls {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 1.3em;
+            text-align: center;
+            color: #333;
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        
+        .controls {
+            display: flex;
             gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
             flex-wrap: wrap;
-            border-top: 1px solid #eee;
         }
-
-        .game-controls input[type="number"] {
-            padding: 10px 15px;
-            border: 2px solid #a29bfe;
-            border-radius: 8px;
-            font-size: 18px;
-            text-align: center;
-            width: 100px;
-            outline: none;
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
         }
-
-        .game-controls input[type="number"]:focus {
-            border-color: #0984e3;
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
         }
-
-        .feedback-message {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2d3436;
-            margin-left: 15px;
-            text-align: center;
-            min-width: 150px;
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
         }
-
-        .score-display {
-            position: absolute;
-            top: 100px; /* Adjust based on header height */
-            right: 30px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px 15px;
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-area {
+            margin: 20px 0;
+            padding: 20px;
             border-radius: 10px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #2d3436;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border: 2px solid #00b894;
+            min-height: 100px;
         }
-
-
+        
+        .result-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .listening-indicator {
+            display: none;
+            text-align: center;
+            color: #dc3545;
+            font-weight: bold;
+            margin: 10px 0;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .score {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .sentence-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .sentence-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .sentence-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .sentence-item.active {
+            background: #007bff;
+            color: white;
+        }
+        
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                padding: 15px;
+            .container {
+                padding: 20px;
             }
             
-            .title {
-                font-size: 24px;
-            }
-
-            .angle-display {
-                font-size: 24px;
-                padding: 15px 20px;
-                top: 20px;
-                right: 20px;
-            }
-
-            .instruction-panel {
-                font-size: 14px;
-                padding: 15px;
-                top: 20px;
-                left: 20px;
-                max-width: 280px;
+            .controls {
+                flex-direction: column;
+                align-items: center;
             }
             
-            .angle-info {
-                font-size: 16px;
-                padding: 15px;
-                bottom: 20px;
-                right: 20px;
-                min-width: 150px;
-            }
-
-            .game-controls {
-                flex-direction: column;
-                gap: 10px;
-                padding: 10px;
-            }
-
-            .game-controls input[type="number"] {
-                width: 80px;
-            }
-
-            .feedback-message {
-                margin-left: 0;
-                margin-top: 10px;
-            }
-
-            .score-display {
-                font-size: 18px;
-                top: 80px;
-                right: 20px;
+            .btn {
+                width: 200px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="title">📐 小学4年生のための分度器ゲーム</div>
-        <div class="controls">
-            <div class="control-group">
-                <label>大きさ:</label>
-                <input type="range" id="sizeSlider" min="0.7" max="1.5" step="0.1" value="1">
-            </div>
-            <button class="btn btn-primary" id="showHintBtn">💡 ヒント</button>
-            <button class="btn btn-reset" id="resetBtn">🔄 リセット</button>
-        </div>
-    </div>
-
-    <div class="canvas-container">
-        <canvas id="canvas"></canvas>
-        <div class="angle-display" id="angleDisplay">0°</div>
-        
-        <div class="instruction-panel">
-            <div class="instruction-title">📚 分度器の使い方</div>
-            <div class="step">
-                <strong>1.</strong> 分度器の中心を角の頂点に合わせよう
-            </div>
-            <div class="step">
-                <strong>2.</strong> 0°の線を角の一つの辺に合わせよう
-            </div>
-            <div class="step">
-                <strong>3.</strong> もう一つの辺が指している目盛りを読もう
-            </div>
-            <div class="step">
-                <strong>4.</strong> マウスを動かして角度を測ってみよう！
-            </div>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 英語発音練習</h1>
+            <p>音声認識で発音をチェックしましょう</p>
         </div>
         
-        <div class="angle-info" id="angleInfo">
-            角度: 0°<br>
-            <small>直線</small>
+        <div class="practice-area">
+            <div class="sentence-display" id="sentenceDisplay">
+                練習する文章を選んでください
+            </div>
+            
+            <div class="listening-indicator" id="listeningIndicator">
+                🎤 音声を認識中...
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="speakBtn">🔊 音声再生</button>
+                <button class="btn btn-success" id="recordBtn">🎤 録音開始</button>
+                <button class="btn btn-secondary" id="nextBtn">➡️ 次の文章</button>
+                <button class="btn btn-secondary" id="testMicBtn">🎤 マイクテスト</button>
+            </div>
+            
+            <div class="result-area result-info" id="resultArea">
+                <strong>使い方：</strong><br>
+                1. 下から練習したい文章を選択<br>
+                2. 「音声再生」でお手本を聞く<br>
+                3. 「録音開始」を押して発音練習<br>
+                4. 結果を確認して繰り返し練習
+            </div>
+            
+            <div class="score" id="scoreArea"></div>
         </div>
         
-        <div class="help-message" id="helpMessage">
-            分度器をドラッグして動かすことができるよ！
+        <div class="sentence-list">
+            <h3>練習文章</h3>
+            <div class="sentence-item" data-sentence="Hello, how are you today?">Hello, how are you today?</div>
+            <div class="sentence-item" data-sentence="I like to study English every day.">I like to study English every day.</div>
+            <div class="sentence-item" data-sentence="The weather is very nice today.">The weather is very nice today.</div>
+            <div class="sentence-item" data-sentence="Can you help me with my homework?">Can you help me with my homework?</div>
+            <div class="sentence-item" data-sentence="I want to improve my English pronunciation.">I want to improve my English pronunciation.</div>
+            <div class="sentence-item" data-sentence="Thank you for your help and support.">Thank you for your help and support.</div>
+            <div class="sentence-item" data-sentence="Practice makes perfect in learning languages.">Practice makes perfect in learning languages.</div>
+            <div class="sentence-item" data-sentence="I enjoy reading books in English.">I enjoy reading books in English.</div>
         </div>
-
-        <div class="score-display" id="scoreDisplay">
-            正解: 0 / 0
-        </div>
-    </div>
-
-    <div class="game-controls">
-        <div class="control-group">
-            <label for="answerInput">この角度は何度かな？</label>
-            <input type="number" id="answerInput" min="0" max="180" placeholder="0-180">
-        </div>
-        <button class="btn btn-primary" id="checkAnswerBtn">✅ こたえ合わせ！</button>
-        <button class="btn btn-primary" id="nextQuestionBtn" style="display:none;">👉 次の問題！</button>
-        <div class="feedback-message" id="feedbackMessage"></div>
     </div>
 
     <script>
-        class ElementaryProtractorGame {
+        class PronunciationApp {
             constructor() {
-                this.canvas = document.getElementById('canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.angleDisplay = document.getElementById('angleDisplay');
-                this.angleInfo = document.getElementById('angleInfo');
-                this.helpMessage = document.getElementById('helpMessage');
-                this.answerInput = document.getElementById('answerInput');
-                this.checkAnswerBtn = document.getElementById('checkAnswerBtn');
-                this.nextQuestionBtn = document.getElementById('nextQuestionBtn');
-                this.feedbackMessage = document.getElementById('feedbackMessage');
-                this.scoreDisplay = document.getElementById('scoreDisplay');
+                this.currentSentence = '';
+                this.recognition = null;
+                this.synthesis = window.speechSynthesis;
+                this.score = 0;
+                this.attempts = 0;
                 
-                this.protractor = {
-                    x: 400,
-                    y: 300,
-                    radius: 180,
-                    rotation: 0,
-                    scale: 1
-                };
-                
-                this.mouse = { x: 0, y: 0 };
-                this.isDragging = false;
-                this.dragOffset = { x: 0, y: 0 };
-                this.currentMeasuredAngle = 0; // The angle currently measured by the protractor
-                this.targetAngle = 0; // The angle the student needs to guess (always 0-180)
-                this.targetAngleBaseOrientation = 0; // 0 for right-facing, Math.PI for left-facing
-                this.correctAnswers = 0;
-                this.totalQuestions = 0;
-                this.isFirstInteraction = true; // Added for initial help message
-                
-                this.init();
+                this.initElements();
+                this.initSpeechRecognition();
+                this.bindEvents();
             }
             
-            init() {
-                this.setupCanvas();
-                this.setupEventListeners();
-                this.newQuestion(); 
-                this.animate();
-                this.showWelcomeMessage();
-                this.updateScoreDisplay();
+            initElements() {
+                this.sentenceDisplay = document.getElementById('sentenceDisplay');
+                this.speakBtn = document.getElementById('speakBtn');
+                this.recordBtn = document.getElementById('recordBtn');
+                this.nextBtn = document.getElementById('nextBtn');
+                this.testMicBtn = document.getElementById('testMicBtn');
+                this.resultArea = document.getElementById('resultArea');
+                this.scoreArea = document.getElementById('scoreArea');
+                this.listeningIndicator = document.getElementById('listeningIndicator');
+                this.sentenceItems = document.querySelectorAll('.sentence-item');
             }
             
-            setupCanvas() {
-                const resizeCanvas = () => {
-                    this.canvas.width = window.innerWidth;
-                    this.canvas.height = window.innerHeight - document.querySelector('.header').offsetHeight - document.querySelector('.game-controls').offsetHeight - 20; 
-                    this.protractor.x = this.canvas.width / 2; 
-                    this.protractor.y = this.canvas.height / 2; 
-                };
-                
-                resizeCanvas();
-                window.addEventListener('resize', resizeCanvas);
-            }
-            
-            setupEventListeners() {
-                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-                this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
-                this.canvas.addEventListener('mouseleave', () => this.handleMouseUp());
-                
-                this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e));
-                this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
-                this.canvas.addEventListener('touchend', () => this.handleMouseUp());
-                
-                document.getElementById('sizeSlider').addEventListener('input', (e) => {
-                    this.protractor.scale = parseFloat(e.target.value);
-                    this.protractor.radius = 180 * this.protractor.scale;
-                });
-                
-                document.getElementById('showHintBtn').addEventListener('click', () => this.showHint());
-                document.getElementById('resetBtn').addEventListener('click', () => this.reset());
-
-                this.checkAnswerBtn.addEventListener('click', () => this.checkAnswer());
-                this.nextQuestionBtn.addEventListener('click', () => this.newQuestion());
-            }
-            
-            showWelcomeMessage() {
-                this.showMessage('分度器をドラッグして動かせるよ！表示された角度を測って入力してみよう！', 4000);
-            }
-            
-            showMessage(text, duration = 3000) {
-                this.helpMessage.textContent = text;
-                this.helpMessage.classList.add('show');
-                clearTimeout(this.messageTimeout); 
-                this.messageTimeout = setTimeout(() => {
-                    this.helpMessage.classList.remove('show');
-                }, duration);
-            }
-            
-            getMousePos(e) {
-                const rect = this.canvas.getBoundingClientRect();
-                return {
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top
-                };
-            }
-            
-            getTouchPos(e) {
-                const rect = this.canvas.getBoundingClientRect();
-                return {
-                    x: e.touches[0].clientX - rect.left,
-                    y: e.touches[0].clientY - rect.top
-                };
-            }
-            
-            handleMouseDown(e) {
-                const pos = this.getMousePos(e);
-                const distance = Math.sqrt(
-                    Math.pow(pos.x - this.protractor.x, 2) + 
-                    Math.pow(pos.y - this.protractor.y, 2)
-                );
-                
-                if (distance < this.protractor.radius + 30) {
-                    this.isDragging = true;
-                    this.dragOffset.x = pos.x - this.protractor.x;
-                    this.dragOffset.y = pos.y - this.protractor.y;
+            initSpeechRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    this.recognition.continuous = false;
+                    this.recognition.interimResults = false;
+                    this.recognition.lang = 'en-US';
                     
-                    if (this.isFirstInteraction) {
-                        this.showMessage('上手！分度器を動かせたね！', 2000);
-                        this.isFirstInteraction = false;
-                    }
-                }
-            }
-            
-            handleMouseMove(e) {
-                const pos = this.getMousePos(e);
-                this.mouse = pos;
-                
-                if (this.isDragging) {
-                    this.protractor.x = pos.x - this.dragOffset.x;
-                    this.protractor.y = pos.y - this.dragOffset.y;
+                    this.recognition.onstart = () => {
+                        this.listeningIndicator.style.display = 'block';
+                        this.recordBtn.textContent = '🛑 録音中...';
+                        this.recordBtn.disabled = true;
+                    };
                     
-                    this.protractor.x = Math.max(this.protractor.radius, Math.min(this.canvas.width - this.protractor.radius, this.protractor.x));
-                    this.protractor.y = Math.max(this.protractor.radius, Math.min(this.canvas.height - this.protractor.radius, this.protractor.y));
-                }
-                
-                this.calculateMeasuredAngle();
-            }
-            
-            handleMouseUp() {
-                this.isDragging = false;
-            }
-            
-            handleTouchStart(e) {
-                e.preventDefault();
-                const pos = this.getTouchPos(e);
-                this.handleMouseDown({ clientX: pos.x + this.canvas.getBoundingClientRect().left, clientY: pos.y + this.canvas.getBoundingClientRect().top });
-            }
-            
-            handleTouchMove(e) {
-                e.preventDefault();
-                const pos = this.getTouchPos(e);
-                this.handleMouseMove({ clientX: pos.x + this.canvas.getBoundingClientRect().left, clientY: pos.y + this.canvas.getBoundingClientRect().top });
-            }
-            
-            calculateMeasuredAngle() {
-                const dx = this.mouse.x - this.protractor.x;
-                const dy = this.mouse.y - this.protractor.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance > this.protractor.radius + 50) {
-                    this.currentMeasuredAngle = 0; 
-                    this.angleDisplay.textContent = `0°`;
-                    this.angleInfo.innerHTML = `角度: 0°<br><small>直線</small>`;
-                    return;
-                }
-                
-                let angleRad = Math.atan2(dy, dx); // Note: dy is positive down in canvas
-                let angleDeg = angleRad * (180 / Math.PI);
-
-                // Adjust for the protractor's orientation (0-180 from right to left)
-                // This converts angles from the standard Cartesian (0 right, CCW) to protractor's (0 right, CW top to 180 left)
-                // For a typical protractor, we're interested in the absolute angle relative to the base line.
-                // If the base line is right (0 rad), angle is simply the absolute value after adjusting to 0-180.
-                // If the base line is left (PI rad), angle is 180 - (angle relative to left base).
-
-                // Normalize angle to 0-360
-                if (angleDeg < 0) angleDeg += 360;
-
-                let measuredAngleForProtractor = 0;
-                if (this.protractor.rotation === 0) { // Standard right-facing protractor
-                    if (angleDeg > 180) { // We only care about the top half
-                         measuredAngleForProtractor = 360 - angleDeg; // Convert 181-359 to 179-1
-                    } else {
-                         measuredAngleForProtractor = angleDeg;
-                    }
-                } else { // Left-facing protractor (rotated by Math.PI)
-                    // Angle relative to the left horizontal axis
-                    let angleRelativeToLeft = Math.abs(angleDeg - 180); // 0 at 180, 180 at 0 and 360
-                    measuredAngleForProtractor = angleRelativeToLeft;
-                }
-                 
-                this.currentMeasuredAngle = Math.round(measuredAngleForProtractor);
-                this.angleDisplay.textContent = `${this.currentMeasuredAngle}°`;
-                
-                this.updateAngleInfo(this.currentMeasuredAngle);
-            }
-            
-            updateAngleInfo(angle) {
-                let type = '';
-                if (angle === 0) {
-                    type = '直線';
-                } else if (angle < 90) {
-                    type = '鋭角';
-                } else if (angle === 90) {
-                    type = '直角';
-                } else if (angle < 180) {
-                    type = '鈍角';
-                } else if (angle === 180) {
-                    type = '平角';
-                }
-                
-                this.angleInfo.innerHTML = `角度: ${angle}°<br><small>${type}</small>`;
-            }
-            
-            drawProtractor() {
-                const ctx = this.ctx;
-                const { x, y, radius, rotation } = this.protractor;
-                
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(rotation); // Apply protractor rotation
-                
-                ctx.beginPath();
-                ctx.arc(0, 0, radius, 0, Math.PI); // Half circle from 0 to PI
-                ctx.closePath();
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                ctx.fill();
-                ctx.strokeStyle = '#2d3436';
-                ctx.lineWidth = 4;
-                ctx.stroke();
-                
-                // Draw tick marks and numbers
-                for (let i = 0; i <= 180; i += 10) {
-                    const angle = (i * Math.PI) / 180; // Angle from 0 to PI
-                    const cos = Math.cos(angle);
-                    const sin = Math.sin(angle);
+                    this.recognition.onresult = (event) => {
+                        const result = event.results[0][0].transcript;
+                        this.processResult(result);
+                    };
                     
-                    let innerRadius, outerRadius, lineWidth;
+                    this.recognition.onerror = (event) => {
+                        let errorMessage = 'エラーが発生しました: ';
+                        switch(event.error) {
+                            case 'not-allowed':
+                                errorMessage = '🎤 マイクの使用許可が必要です。<br><br>' +
+                                             '<strong>解決方法：</strong><br>' +
+                                             '1. アドレスバーの🔒マークをクリック<br>' +
+                                             '2. マイクを「許可」に設定<br>' +
+                                             '3. ページを再読み込みしてください';
+                                break;
+                            case 'no-speech':
+                                errorMessage = '音声が検出されませんでした。もう一度お試しください。';
+                                break;
+                            case 'audio-capture':
+                                errorMessage = 'マイクにアクセスできません。他のアプリがマイクを使用していないか確認してください。';
+                                break;
+                            case 'network':
+                                errorMessage = 'ネットワークエラーです。インターネット接続を確認してください。';
+                                break;
+                            default:
+                                errorMessage += event.error;
+                        }
+                        this.showResult(errorMessage, 'error');
+                        this.resetRecordButton();
+                    };
                     
-                    if (i % 30 === 0) {
-                        innerRadius = radius - 40;
-                        outerRadius = radius - 10;
-                        lineWidth = 4;
-                    } else {
-                        innerRadius = radius - 25;
-                        outerRadius = radius - 10;
-                        lineWidth = 2;
-                    }
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(cos * innerRadius, sin * innerRadius); // Y-axis is positive downwards
-                    ctx.lineTo(cos * outerRadius, sin * outerRadius);
-                    ctx.strokeStyle = '#2d3436';
-                    ctx.lineWidth = lineWidth;
-                    ctx.stroke();
-                    
-                    if (i % 10 === 0) {
-                        ctx.save();
-                        // Position text outside the ticks
-                        ctx.translate(cos * (radius - 50), sin * (radius - 50)); 
-                        ctx.rotate(-rotation); // Un-rotate text so it's always upright
-                        ctx.fillStyle = '#2d3436';
-                        ctx.font = 'bold 16px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(i.toString(), 0, 0);
-                        ctx.restore();
-                    }
-                }
-                
-                // Center point
-                ctx.beginPath();
-                ctx.arc(0, 0, 12, 0, Math.PI * 2);
-                ctx.fillStyle = '#e17055';
-                ctx.fill();
-                ctx.strokeStyle = '#2d3436';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                
-                // 0-degree base line (right horizontal)
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(radius - 10, 0);
-                ctx.strokeStyle = '#00b894';
-                ctx.lineWidth = 5;
-                ctx.stroke();
-                
-                ctx.restore();
-            }
-            
-            drawAngleMeasurement() {
-                const distance = Math.sqrt(Math.pow(this.mouse.x - this.protractor.x, 2) + Math.pow(this.mouse.y - this.protractor.y, 2));
-                if (distance > this.protractor.radius + 50) {
-                    return;
-                }
-                
-                const ctx = this.ctx;
-                ctx.save();
-                
-                // Line from center to mouse position
-                ctx.beginPath();
-                ctx.moveTo(this.protractor.x, this.protractor.y);
-                ctx.lineTo(this.mouse.x, this.mouse.y);
-                ctx.strokeStyle = '#fd79a8';
-                ctx.lineWidth = 4;
-                ctx.stroke();
-                
-                // Arc for the measured angle
-                const arcRadius = 60;
-                let mouseAngle = Math.atan2(this.mouse.y - this.protractor.y, this.mouse.x - this.protractor.x);
-                let startAngle = this.protractor.rotation;
-                let endAngle = mouseAngle;
-
-                // Adjust arc drawing to always go from the base line to the mouse line
-                // Considering the protractor's rotation and the expected 0-180 range
-                if (this.protractor.rotation === 0) { // Right-facing protractor
-                    if (mouseAngle < 0) mouseAngle += 2 * Math.PI; // Normalize to 0-2PI
-                    startAngle = 0;
-                    endAngle = mouseAngle;
-                    if (endAngle > Math.PI) endAngle = Math.PI; // Clamp to 180 degrees
-                } else { // Left-facing protractor (rotated PI)
-                    startAngle = Math.PI;
-                    endAngle = mouseAngle;
-                    // If mouse is above left horizontal line (angle between 0 and -PI, or 0 and PI)
-                    // We need to measure "clockwise" from PI
-                    if (endAngle > Math.PI) {
-                        endAngle = Math.PI * 2 - endAngle; // Convert 181-359 to angle from 0 towards 180
-                        startAngle = Math.PI;
-                    } else { // mouse is below left horizontal line (between PI and 2PI)
-                        // This means the angle is measured towards the lower half, which is not usually done with a standard protractor.
-                        // For simplicity in a 0-180 range, we'll effectively treat this as 0 degrees relative to the 180 line.
-                        // Or, if we consider it in a 360 context, it's 180 - angle.
-                        // For a 180-degree protractor, we essentially want the absolute difference from 180.
-                        startAngle = Math.PI;
-                        endAngle = Math.abs(mouseAngle);
-                    }
-                    ctx.arc(this.protractor.x, this.protractor.y, arcRadius, startAngle, endAngle, true); // true for counter-clockwise if needed
-                    ctx.strokeStyle = '#fdcb6e';
-                    ctx.lineWidth = 5;
-                    ctx.stroke();
-                    ctx.restore();
-                    return;
-                }
-
-                ctx.beginPath();
-                ctx.arc(this.protractor.x, this.protractor.y, arcRadius, startAngle + this.protractor.rotation, endAngle + this.protractor.rotation, false);
-                ctx.strokeStyle = '#fdcb6e';
-                ctx.lineWidth = 5;
-                ctx.stroke();
-                
-                ctx.restore();
-            }
-
-            drawTargetAngle() {
-                const ctx = this.ctx;
-                const { x, y, radius } = this.protractor;
-
-                ctx.save();
-                ctx.translate(x, y);
-
-                // Base line for the target angle
-                // This line will either be right-facing (0) or left-facing (Math.PI)
-                const baseLineX = radius * Math.cos(this.targetAngleBaseOrientation);
-                const baseLineY = radius * Math.sin(this.targetAngleBaseOrientation);
-                
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(baseLineX, baseLineY);
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                // Second line for the target angle
-                // The actual angle needs to be relative to the base orientation.
-                let angleFromBase = this.targetAngle; // This is the 0-180 angle
-                let actualTargetAngleRad;
-
-                if (this.targetAngleBaseOrientation === 0) { // Right-facing base
-                    actualTargetAngleRad = (angleFromBase * Math.PI) / 180;
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(radius * Math.cos(actualTargetAngleRad), -radius * Math.sin(actualTargetAngleRad)); // -sin for canvas Y-axis
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                } else { // Left-facing base (Math.PI)
-                    // For a clock-wise angle from the left horizontal, convert it to standard radians.
-                    // If targetAngle is 30, it means 30 degrees clockwise from left.
-                    // In standard cartesian (0 right, CCW), this would be 180 + 30 = 210 degrees.
-                    // Or, if measuring with a protractor where 0 is left and clockwise towards bottom,
-                    // we want 180 - angle.
-                    actualTargetAngleRad = Math.PI - (angleFromBase * Math.PI) / 180; // Angle for the other ray
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(radius * Math.cos(actualTargetAngleRad), -radius * Math.sin(actualTargetAngleRad));
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                }
-
-                ctx.restore();
-            }
-            
-            showHint() {
-                const hints = [
-                    '分度器の中心を角の頂点に合わせてね！',
-                    '分度器の0°の線を角の一つの辺に合わせよう！',
-                    'もう一つの辺が指している目盛りをよく見てね！',
-                    '90°は直角、180°は平角だよ！',
-                    'マウスを動かして色々な角度を試してみよう！',
-                    `この角度は${this.targetAngle}°に近いかな？`
-                ];
-                
-                const randomHint = hints[Math.floor(Math.random() * hints.length)];
-                this.showMessage(randomHint, 3000);
-            }
-            
-            reset() {
-                this.protractor.x = this.canvas.width / 2;
-                this.protractor.y = this.canvas.height / 2;
-                this.protractor.rotation = 0;
-                this.currentMeasuredAngle = 0;
-                this.angleDisplay.textContent = '0°';
-                this.angleInfo.innerHTML = '角度: 0°<br><small>直線</small>';
-                this.showMessage('リセットしたよ！また測ってみよう！', 2000);
-                this.correctAnswers = 0;
-                this.totalQuestions = 0;
-                this.updateScoreDisplay();
-                this.newQuestion(); 
-            }
-
-            newQuestion() {
-                this.targetAngle = Math.floor(Math.random() * 181); // Random angle between 0 and 180
-                // Randomly choose base orientation: 0 (right) or Math.PI (left)
-                this.targetAngleBaseOrientation = Math.random() < 0.5 ? 0 : Math.PI;
-
-                // Adjust protractor to match the base orientation of the target angle
-                // This makes it easier for the student to align the protractor
-                this.protractor.rotation = this.targetAngleBaseOrientation;
-
-                this.angleDisplay.textContent = `？°`; 
-                this.angleInfo.innerHTML = `角度: わからない<br><small>これを測ってみよう！</small>`;
-                this.answerInput.value = '';
-                this.feedbackMessage.textContent = '';
-                this.checkAnswerBtn.style.display = 'inline-block';
-                this.nextQuestionBtn.style.display = 'none';
-                this.canvas.style.cursor = 'crosshair'; 
-                this.isDragging = false; 
-                this.updateScoreDisplay();
-                this.showMessage('新しい問題だよ！この角度を測ってみよう！', 3000);
-            }
-
-            checkAnswer() {
-                const userAnswer = parseInt(this.answerInput.value);
-                if (isNaN(userAnswer) || userAnswer < 0 || userAnswer > 180) {
-                    this.showMessage('0から180の数字で答えてね！', 2000);
-                    return;
-                }
-
-                this.totalQuestions++;
-                this.angleDisplay.textContent = `${this.currentMeasuredAngle}°`; 
-
-                // Check answer with a tolerance of 2 degrees
-                if (Math.abs(userAnswer - this.targetAngle) <= 2) { 
-                    this.feedbackMessage.textContent = '💮 大正解！やったね！';
-                    this.feedbackMessage.style.color = '#00b894';
-                    this.correctAnswers++;
-                    this.showMessage('おめでとう！正解だよ！', 2500);
+                    this.recognition.onend = () => {
+                        this.resetRecordButton();
+                    };
                 } else {
-                    this.feedbackMessage.textContent = `残念！正解は ${this.targetAngle}° だよ。`;
-                    this.feedbackMessage.style.color = '#e17055';
-                    this.showMessage(`残念！正解は ${this.targetAngle}° だったよ。`, 3000);
+                    this.showResult('お使いのブラウザは音声認識に対応していません。<br>Chrome、Edge、Safari（最新版）をお使いください。', 'error');
                 }
-                
-                this.updateScoreDisplay();
-                this.checkAnswerBtn.style.display = 'none';
-                this.nextQuestionBtn.style.display = 'inline-block';
-            }
-
-            updateScoreDisplay() {
-                this.scoreDisplay.textContent = `正解: ${this.correctAnswers} / ${this.totalQuestions}`;
             }
             
-            animate() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            bindEvents() {
+                this.speakBtn.addEventListener('click', () => this.speakSentence());
+                this.recordBtn.addEventListener('click', () => this.startRecording());
+                this.nextBtn.addEventListener('click', () => this.nextSentence());
+                this.testMicBtn.addEventListener('click', () => this.testMicrophone());
                 
-                this.drawProtractor();
-                this.drawTargetAngle(); 
-                this.drawAngleMeasurement(); 
+                this.sentenceItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.selectSentence(item.dataset.sentence);
+                        this.updateActiveItem(item);
+                    });
+                });
+            }
+            
+            selectSentence(sentence) {
+                this.currentSentence = sentence;
+                this.sentenceDisplay.textContent = sentence;
+                this.resultArea.className = 'result-area result-info';
+                this.resultArea.innerHTML = '<strong>選択された文章:</strong><br>' + sentence + '<br><br>「音声再生」でお手本を聞いてから、「録音開始」で練習してください。';
+            }
+            
+            updateActiveItem(activeItem) {
+                this.sentenceItems.forEach(item => item.classList.remove('active'));
+                activeItem.classList.add('active');
+            }
+            
+            speakSentence() {
+                if (!this.currentSentence) {
+                    this.showResult('まず練習する文章を選択してください。', 'error');
+                    return;
+                }
                 
-                requestAnimationFrame(() => this.animate());
+                const utterance = new SpeechSynthesisUtterance(this.currentSentence);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                
+                this.synthesis.speak(utterance);
+            }
+            
+            startRecording() {
+                if (!this.currentSentence) {
+                    this.showResult('まず練習する文章を選択してください。', 'error');
+                    return;
+                }
+                
+                if (!this.recognition) {
+                    this.showResult('音声認識が利用できません。', 'error');
+                    return;
+                }
+                
+                this.recognition.start();
+            }
+            
+            processResult(spokenText) {
+                this.attempts++;
+                const similarity = this.calculateSimilarity(this.currentSentence.toLowerCase(), spokenText.toLowerCase());
+                
+                let resultClass, resultText;
+                if (similarity > 0.8) {
+                    resultClass = 'success';
+                    resultText = '🎉 素晴らしい発音です！';
+                    this.score += 10;
+                } else if (similarity > 0.6) {
+                    resultClass = 'info';
+                    resultText = '👍 良い発音です。もう少し練習してみましょう。';
+                    this.score += 5;
+                } else {
+                    resultClass = 'error';
+                    resultText = '💪 発音を練習しましょう。もう一度挑戦してください。';
+                }
+                
+                const detailedResult = `
+                    <strong>${resultText}</strong><br><br>
+                    <strong>目標文章:</strong> ${this.currentSentence}<br>
+                    <strong>認識結果:</strong> ${spokenText}<br>
+                    <strong>類似度:</strong> ${Math.round(similarity * 100)}%
+                `;
+                
+                this.showResult(detailedResult, resultClass);
+                this.updateScore();
+            }
+            
+            calculateSimilarity(str1, str2) {
+                const words1 = str1.replace(/[^\w\s]/g, '').split(/\s+/);
+                const words2 = str2.replace(/[^\w\s]/g, '').split(/\s+/);
+                
+                const maxLength = Math.max(words1.length, words2.length);
+                if (maxLength === 0) return 1;
+                
+                let matches = 0;
+                for (let i = 0; i < Math.min(words1.length, words2.length); i++) {
+                    if (words1[i] === words2[i]) {
+                        matches++;
+                    }
+                }
+                
+                return matches / maxLength;
+            }
+            
+            showResult(message, type) {
+                this.resultArea.className = `result-area result-${type}`;
+                this.resultArea.innerHTML = message;
+            }
+            
+            resetRecordButton() {
+                this.listeningIndicator.style.display = 'none';
+                this.recordBtn.textContent = '🎤 録音開始';
+                this.recordBtn.disabled = false;
+            }
+            
+            updateScore() {
+                this.scoreArea.innerHTML = `スコア: ${this.score}点 (${this.attempts}回挑戦)`;
+            }
+            
+            nextSentence() {
+                const activeItem = document.querySelector('.sentence-item.active');
+                if (activeItem) {
+                    const nextItem = activeItem.nextElementSibling;
+                    if (nextItem && nextItem.classList.contains('sentence-item')) {
+                        nextItem.click();
+                    } else {
+                        // 最初の文章に戻る
+                        this.sentenceItems[0].click();
+                    }
+                } else {
+                    // アクティブな項目がない場合は最初の文章を選択
+                    this.sentenceItems[0].click();
+                }
+            }
+            
+            async testMicrophone() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.showResult('✅ マイクのテストに成功しました！音声認識が使用できます。', 'success');
+                    // ストリームを停止
+                    stream.getTracks().forEach(track => track.stop());
+                } catch (error) {
+                    let errorMessage = '❌ マイクのテストに失敗しました。<br><br>';
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage += '<strong>マイクの許可が必要です：</strong><br>' +
+                                      '1. ブラウザのアドレスバー左側の🔒をクリック<br>' +
+                                      '2. マイクを「許可」に設定<br>' +
+                                      '3. ページを再読み込みしてください';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage += 'マイクが見つかりません。マイクが接続されているか確認してください。';
+                    } else {
+                        errorMessage += 'エラー: ' + error.message;
+                    }
+                    this.showResult(errorMessage, 'error');
+                }
             }
         }
         
-        window.addEventListener('DOMContentLoaded', () => {
-            new ElementaryProtractorGame();
+        // アプリケーション開始
+        document.addEventListener('DOMContentLoaded', () => {
+            new PronunciationApp();
         });
     </script>
 </body>
