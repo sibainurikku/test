@@ -259,11 +259,13 @@
                 this.currentSentence = '';
                 this.recognition = null;
                 this.synthesis = window.speechSynthesis;
+                this.englishVoice = null; 
                 this.score = 0;
                 this.attempts = 0;
                 
                 this.initElements();
                 this.initSpeechRecognition();
+                this.loadVoices(); 
                 this.bindEvents();
             }
             
@@ -303,10 +305,10 @@
                         switch(event.error) {
                             case 'not-allowed':
                                 errorMessage = '🎤 マイクの使用許可が必要です。<br><br>' +
-                                             '<strong>解決方法：</strong><br>' +
-                                             '1. アドレスバーの🔒マークをクリック<br>' +
-                                             '2. マイクを「許可」に設定<br>' +
-                                             '3. ページを再読み込みしてください';
+                                               '<strong>解決方法：</strong><br>' +
+                                               '1. アドレスバーの🔒マークをクリック<br>' +
+                                               '2. マイクを「許可」に設定<br>' +
+                                               '3. ページを再読み込みしてください';
                                 break;
                             case 'no-speech':
                                 errorMessage = '音声が検出されませんでした。もう一度お試しください。';
@@ -329,6 +331,39 @@
                     };
                 } else {
                     this.showResult('お使いのブラウザは音声認識に対応していません。<br>Chrome、Edge、Safari（最新版）をお使いください。', 'error');
+                }
+            }
+
+            loadVoices() {
+                // `voiceschanged` イベントは、音声が利用可能になったときに発火します。
+                // 特にSafari (iOS) では、このイベントがユーザー操作の後にしか発火しない場合があります。
+                // したがって、両方のケースに対応するために、イベントリスナーを設定しつつ、
+                // 必要に応じて手動でgetVoicesを呼び出すロジックを維持します。
+                const setVoice = () => {
+                    const voices = this.synthesis.getVoices();
+                    // 特定の英語音声（US英語）を優先的に選択
+                    this.englishVoice = voices.find(voice => voice.lang === 'en-US' && voice.name.includes('Samantha')) ||
+                                         voices.find(voice => voice.lang === 'en-US' && voice.name.includes('Alex')) ||
+                                         voices.find(voice => voice.lang === 'en-US' && voice.name.includes('Google US English')) ||
+                                         voices.find(voice => voice.lang === 'en-US'); 
+                    
+                    if (!this.englishVoice) {
+                        console.warn('en-US の音声が見つかりませんでした。デフォルト音声が使用される可能性があります。');
+                    } else {
+                        console.log('英語音声が設定されました:', this.englishVoice.name);
+                    }
+                };
+
+                // voiceschanged イベントリスナーを設定
+                this.synthesis.onvoiceschanged = setVoice;
+
+                // 既に音声がロードされている可能性がある場合の対応（特にPCブラウザ向け）
+                if (this.synthesis.getVoices().length > 0) {
+                    setVoice();
+                } else {
+                    // iOS/Safariでvoiceschangedがすぐに発火しない場合のフォールバック
+                    // 短い遅延を設けて再度getVoicesを試行
+                    setTimeout(setVoice, 500); 
                 }
             }
             
@@ -364,10 +399,21 @@
                     return;
                 }
                 
+                // 再生中の場合は停止
+                if (this.synthesis.speaking) {
+                    this.synthesis.cancel();
+                }
+
                 const utterance = new SpeechSynthesisUtterance(this.currentSentence);
                 utterance.lang = 'en-US';
                 utterance.rate = 0.8;
                 
+                if (this.englishVoice) {
+                    utterance.voice = this.englishVoice;
+                } else {
+                    console.warn('英語音声が設定されていません。ブラウザのデフォルト音声が使用されます。');
+                }
+
                 this.synthesis.speak(utterance);
             }
             
@@ -415,12 +461,15 @@
             }
             
             calculateSimilarity(str1, str2) {
-                const words1 = str1.replace(/[^\w\s]/g, '').split(/\s+/);
-                const words2 = str2.replace(/[^\w\s]/g, '').split(/\s+/);
+                const cleanStr1 = str1.replace(/[^\p{L}\p{N}\s]/gu, '').toLowerCase().trim();
+                const cleanStr2 = str2.replace(/[^\p{L}\p{N}\s]/gu, '').toLowerCase().trim();
+
+                const words1 = cleanStr1.split(/\s+/).filter(Boolean);
+                const words2 = cleanStr2.split(/\s+/).filter(Boolean);
                 
                 const maxLength = Math.max(words1.length, words2.length);
                 if (maxLength === 0) return 1;
-                
+
                 let matches = 0;
                 for (let i = 0; i < Math.min(words1.length, words2.length); i++) {
                     if (words1[i] === words2[i]) {
@@ -453,11 +502,9 @@
                     if (nextItem && nextItem.classList.contains('sentence-item')) {
                         nextItem.click();
                     } else {
-                        // 最初の文章に戻る
                         this.sentenceItems[0].click();
                     }
                 } else {
-                    // アクティブな項目がない場合は最初の文章を選択
                     this.sentenceItems[0].click();
                 }
             }
@@ -466,17 +513,18 @@
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     this.showResult('✅ マイクのテストに成功しました！音声認識が使用できます。', 'success');
-                    // ストリームを停止
                     stream.getTracks().forEach(track => track.stop());
                 } catch (error) {
                     let errorMessage = '❌ マイクのテストに失敗しました。<br><br>';
-                    if (error.name === 'NotAllowedError') {
+                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') { // Safari (iOS) でのPermissionDeniedErrorにも対応
                         errorMessage += '<strong>マイクの許可が必要です：</strong><br>' +
-                                      '1. ブラウザのアドレスバー左側の🔒をクリック<br>' +
-                                      '2. マイクを「許可」に設定<br>' +
-                                      '3. ページを再読み込みしてください';
+                                        '1. ブラウザのアドレスバー左側の🔒をクリック<br>' +
+                                        '2. マイクを「許可」に設定<br>' +
+                                        '3. ページを再読み込みしてください';
                     } else if (error.name === 'NotFoundError') {
                         errorMessage += 'マイクが見つかりません。マイクが接続されているか確認してください。';
+                    } else if (error.name === 'NotReadableError' || error.name === 'AbortError') { // マイクが利用中などのエラー
+                        errorMessage += 'マイクにアクセスできません。他のアプリがマイクを使用していないか確認してください。';
                     } else {
                         errorMessage += 'エラー: ' + error.message;
                     }
@@ -485,7 +533,6 @@
             }
         }
         
-        // アプリケーション開始
         document.addEventListener('DOMContentLoaded', () => {
             new PronunciationApp();
         });
